@@ -25,12 +25,17 @@ CUDA_INC=-I$(CUDA_ROOT)/include
 ###############################################
 SRC_DIR=src
 OBJ_DIR=bin
+MHD_DIR=mhd
 
 RT_OBJS=$(OBJ_DIR)/main.o $(OBJ_DIR)/oacc.o $(OBJ_DIR)/integrate.o $(OBJ_DIR)/cg.o $(OBJ_DIR)/graph.o
+MHD_OBJS=$(OBJ_DIR)/$(MHD_DIR)/main.o $(OBJ_DIR)/$(MHD_DIR)/mhd_acc.o
 
 ###############################################
-rt_integrate: $(RT_OBJS)
+rt_integrate: $(OBJ_DIR) $(RT_OBJS)
 	$(CXX) $(CXX_FLAGS) $(RT_OBJS) -o $@ $(CUDA_INC) $(CUDA_LIB)
+
+mhd: $(OBJ_DIR) $(MHD_OBJS)
+	$(CXX) $(CXX_FLAGS) $(MHD_OBJS) -o $@ $(CUDA_INC) $(CUDA_LIB)
 
 $(OBJ_DIR)/%.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
@@ -41,6 +46,10 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cu
 	$(NVCC) $(NVCC_FLAGS) -c $< -o $@ $(NVCC_LIBS)
 
+$(OBJ_DIR):
+	mkdir -p bin
+	mkdir -p bin/mhd
+
 clean:
-	$(RM) bin/* *.o rt_integrate
+	$(RM) bin/*.o bin/mhd/*.o rt_integrate mhd
 
